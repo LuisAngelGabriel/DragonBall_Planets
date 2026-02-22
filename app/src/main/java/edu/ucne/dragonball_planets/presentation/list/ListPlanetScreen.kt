@@ -1,5 +1,4 @@
 package edu.ucne.dragonball_planets.presentation.planet_list
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -155,13 +154,6 @@ fun PlanetItem(
 @Composable
 fun ListPlanetBodyScreenPreview() {
     val samplePlanets = listOf(
-        PlanetDto(
-            id = 1,
-            name = "Namek",
-            isDestroyed = true,
-            description = "Planeta natal de Piccolo",
-            image = ""
-        ),
         PlanetDto(
             id = 2,
             name = "Tierra",
