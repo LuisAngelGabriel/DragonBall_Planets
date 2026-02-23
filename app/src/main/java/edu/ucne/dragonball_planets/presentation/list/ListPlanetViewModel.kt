@@ -32,6 +32,7 @@ class ListPlanetViewModel @Inject constructor(
                         filterIsDestroyed = event.isDestroyed
                     )
                 }
+                loadPlanets()
             }
             ListPlanetUiEvent.Search -> loadPlanets()
         }
@@ -39,33 +40,39 @@ class ListPlanetViewModel @Inject constructor(
 
     private fun loadPlanets() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-
+            _state.update { it.copy(isLoading = true, error = null) }
             val current = _state.value
 
             val result = getPlanetsUseCase(
-                name = current.filterName.takeIf { it.isNotBlank() },
-                isDestroyed = current.filterIsDestroyed
+                name = current.filterName.takeIf { it.isNotBlank() }
             )
 
             when (result) {
-                is Resource.Success ->
+                is Resource.Success -> {
+                    val data = result.data ?: emptyList()
+                    val filteredData = if (current.filterIsDestroyed != null) {
+                        data.filter { it.isDestroyed == current.filterIsDestroyed }
+                    } else {
+                        data
+                    }
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            planets = result.data ?: emptyList()
+                            planets = filteredData
                         )
                     }
-
-                is Resource.Error ->
+                }
+                is Resource.Error -> {
                     _state.update {
                         it.copy(
                             isLoading = false,
                             error = result.message
                         )
                     }
-
-                is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+                }
+                is Resource.Loading -> {
+                    _state.update { it.copy(isLoading = true) }
+                }
             }
         }
     }

@@ -1,8 +1,11 @@
 package edu.ucne.dragonball_planets.presentation.planet_list
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,65 +48,54 @@ fun ListPlanetBodyScreen(
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
-
-            FilterSection(
-                name = state.filterName,
-                onEvent = onEvent
+            OutlinedTextField(
+                value = state.filterName,
+                onValueChange = { onEvent(ListPlanetUiEvent.UpdateFilters(it, state.filterIsDestroyed)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = { Text("Buscar planeta...") },
+                trailingIcon = {
+                    IconButton(onClick = { onEvent(ListPlanetUiEvent.Search) }) {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                    }
+                },
+                singleLine = true
             )
 
             if (state.isLoading) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
 
+            if (state.error != null) {
+                Text(
+                    text = state.error,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
+                )
+            }
+
             LazyColumn(
-                contentPadding = PaddingValues(16.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.planets) { planet ->
                     PlanetItem(
                         planet = planet,
                         onClick = { onPlanetClick(planet.id) }
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun FilterSection(
-    name: String,
-    onEvent: (ListPlanetUiEvent) -> Unit
-) {
-    ElevatedCard(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { onEvent(ListPlanetUiEvent.UpdateFilters(it, null)) },
-                label = { Text("Nombre del planeta") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Button(
-                onClick = { onEvent(ListPlanetUiEvent.Search) },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Buscar")
             }
         }
     }
@@ -120,14 +112,13 @@ fun PlanetItem(
             .clickable { onClick() }
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             AsyncImage(
                 model = planet.image,
                 contentDescription = planet.name,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(70.dp)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -139,7 +130,7 @@ fun PlanetItem(
                 )
                 Text(
                     text = if (planet.isDestroyed) "Destruido" else "Activo",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = if (planet.isDestroyed)
                         MaterialTheme.colorScheme.error
                     else

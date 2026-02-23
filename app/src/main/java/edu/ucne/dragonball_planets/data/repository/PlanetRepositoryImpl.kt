@@ -3,6 +3,7 @@ package edu.ucne.dragonball_planets.data.repository
 import edu.ucne.dragonball_planets.data.remote.DragonBallApi
 import edu.ucne.dragonball_planets.data.remote.Resource
 import edu.ucne.dragonball_planets.data.remote.dto.PlanetDto
+import edu.ucne.dragonball_planets.data.remote.dto.PlanetResponseDto
 import edu.ucne.dragonball_planets.domain.repository.PlanetRepository
 import javax.inject.Inject
 
@@ -17,24 +18,26 @@ class PlanetRepositoryImpl @Inject constructor(
         isDestroyed: Boolean?
     ): Resource<List<PlanetDto>> {
         return try {
-            val response = api.getPlanets(page, limit, name, isDestroyed)
-
-            if (response.isSuccessful && response.body() != null) {
-                val data = response.body()!!.items
-                Resource.Success(data)
+            val listaFinal: List<PlanetDto> = if (!name.isNullOrBlank()) {
+                val response = api.searchPlanets(name)
+                response.body() ?: emptyList()
             } else {
-                Resource.Error("Error servidor: ${response.message()}")
+                val response = api.getPlanets(page, limit)
+                response.body()?.items ?: emptyList()
             }
+
+            Resource.Success(listaFinal)
         } catch (e: Exception) {
-            Resource.Error("Error conexión: ${e.localizedMessage}")
+            Resource.Error("Error de conexion: ${e.localizedMessage}")
         }
     }
 
     override suspend fun getPlanetDetail(id: Int): Resource<PlanetDto> {
         return try {
             val response = api.getPlanetDetail(id)
-            if (response.isSuccessful && response.body() != null) {
-                Resource.Success(response.body()!!)
+            val planet = response.body()
+            if (response.isSuccessful && planet != null) {
+                Resource.Success(planet)
             } else {
                 Resource.Error("Planeta no encontrado")
             }

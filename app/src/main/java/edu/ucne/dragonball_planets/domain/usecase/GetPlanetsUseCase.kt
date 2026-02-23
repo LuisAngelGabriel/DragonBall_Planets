@@ -11,9 +11,8 @@ class GetPlanetsUseCase @Inject constructor(
     suspend operator fun invoke(
         page: Int = 1,
         limit: Int = 10,
-        name: String? = null,
-        isDestroyed: Boolean? = null
+        name: String? = null
     ): Resource<List<PlanetDto>> {
-        return repository.getPlanets(page, limit, name, isDestroyed)
+        return repository.getPlanets(page, limit, name, null)
     }
 }
